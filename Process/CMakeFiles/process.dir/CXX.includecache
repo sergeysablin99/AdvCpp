@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/gtl/TPProjects/Process/include/process.hpp
+string
+-
+
+/home/gtl/TPProjects/Process/source/main.cpp
+iostream
+-
+../include/process.hpp
+/home/gtl/TPProjects/Process/include/process.hpp
+

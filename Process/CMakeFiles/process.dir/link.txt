@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/process.dir/source/main.cpp.o  -o process libproc.a 

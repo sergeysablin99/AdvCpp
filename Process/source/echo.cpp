@@ -10,6 +10,7 @@ int main() {
     while (!feof(stdin))
     {
         size_t bytes = fread(buffer, 1, sizeof(buffer), stdin);
+        fflush(stdout);
         fwrite(buffer, 1, bytes, stdout);
     }
     return 0;

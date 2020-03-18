@@ -2,6 +2,6 @@
 #include "../include/process.hpp"
 
 int main() {
-    Process process("/bin/ls");
+    Process process("./echo");
     return 0;
 }
