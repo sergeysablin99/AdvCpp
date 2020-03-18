@@ -103,7 +103,7 @@ void Process::closeStdin() {
     int reply = ::close(pipefd_cp[0]);
     if (reply == -1)
         perror("Close error");
-    reply == ::close(pipefd_pc[1]);
+    reply = ::close(pipefd_pc[1]);
     if (reply == -1)
         perror("Close error");
 }
