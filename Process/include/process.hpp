@@ -20,6 +20,12 @@ public:
 
     void close();
 
+private:
+    // pc -  наследник читает, родитель пишет
+    // cp - родитель читает, наследник пишет
+    int pipefd_pc[2];
+    int pipefd_cp[2];
+    int cpid;
 };
 
 #endif
