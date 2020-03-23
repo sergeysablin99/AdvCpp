@@ -7,7 +7,7 @@
 class Process
 {
 public:
-    explicit  Process(const std::string& path);
+    explicit Process(const std::string& path);
     ~Process();
 
     size_t write(const void* data, size_t len);
@@ -21,11 +21,10 @@ public:
     void close();
 
 private:
-    // pc -  наследник читает, родитель пишет
-    // cp - родитель читает, наследник пишет
-    int pipefd_pc[2];
-    int pipefd_cp[2];
-    int cpid;
+    void kill();
+    int fd_read;
+    int fd_write;
+    pid_t cpid;
 };
 
 #endif
