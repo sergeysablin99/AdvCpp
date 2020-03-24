@@ -3,10 +3,17 @@
 
 #include <string>
 
-
 class Process
 {
 public:
+    class Exception : public std::exception {
+    private:
+        char* msg;
+    public:
+        explicit Exception(char* message) : msg(message) {};
+        std::string what() { return msg; };
+    };
+
     explicit Process(const std::string& path);
     ~Process();
 
@@ -25,6 +32,7 @@ private:
     int fd_read;
     int fd_write;
     pid_t cpid;
+    bool eof;
 };
 
 #endif

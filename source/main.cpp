@@ -1,3 +1,4 @@
+#include <iostream>
 #include <process.hpp>
 
 int main(int argc, char* argv[]) {
@@ -5,14 +6,13 @@ int main(int argc, char* argv[]) {
         try {
             Process process(argv[1]);
         }
-        catch (const char* error) {
-            fwrite(error, 1, sizeof(error), stdout);
+        catch (Process::Exception& except) {
+            std::cout << except.what();
         }
         // Если программа дошла до этого места, то программа успешно запустилась и можно исполнять комманды
     }
     else {
-        char buffer[24] = "Error: no path provided";
-        fwrite(buffer, 1, sizeof(buffer), stdout);
+        std::cout << "Error: no path provided";
     }
     return 0;
 }
