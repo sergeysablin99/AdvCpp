@@ -17,8 +17,10 @@ Process::Process(const std::string &path) : eof(true)
     fd_read = pipefd_cp[0];
     fd_write = pipefd_pc[1];
     cpid = fork();
-    if (cpid == -1)
+    if (cpid == -1) {
+        close();
         throw Exception("Fork error");
+    }
     if (cpid == 0) {
         // Открыт дочерний процесс
         ::close(pipefd_pc[1]);
@@ -58,7 +60,7 @@ size_t Process::read(void *data, size_t len) {
     ssize_t reply = ::read(fd_read, data, len);
     if (reply == -1)
        throw Exception(strerror(errno));
-    eof = reply == len;
+    eof = reply == 0;
     return reply;
 }
 
@@ -88,5 +90,5 @@ void Process::closeStdin() {
 }
 
 bool Process::isReadable() const {
-    return eof;
+    return !eof;
 }
