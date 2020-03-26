@@ -18,13 +18,16 @@ Process::Process(const std::string &path) : eof(true)
     fd_write = pipefd_pc[1];
     cpid = fork();
     if (cpid == -1) {
-        close();
+
         throw Exception("Fork error");
     }
     if (cpid == 0) {
         // Открыт дочерний процесс
+        ::close(oioefd_pc[0]);
         ::close(pipefd_pc[1]);
         ::close(pipefd_cp[0]);
+        ::close(pipefd_cp[1]);
+
 
         dup2(pipefd_pc[0], STDIN_FILENO);
         dup2(pipefd_cp[1], STDOUT_FILENO);
@@ -60,7 +63,7 @@ size_t Process::read(void *data, size_t len) {
     ssize_t reply = ::read(fd_read, data, len);
     if (reply == -1)
        throw Exception(strerror(errno));
-    eof = reply == 0;
+    eof = (reply == 0);
     return reply;
 }
 
