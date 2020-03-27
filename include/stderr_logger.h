@@ -5,16 +5,20 @@
 #ifndef LOG_STDERR_LOGGER_H
 #define LOG_STDERR_LOGGER_H
 
-#include <base_logger.h>
+#include "base_logger.h"
 
-class StderrLogger : public BaseLogger {
-public:
-    explicit StderrLogger( Level level) noexcept;
-    ~StderrLogger() noexcept = default;
-    void flush() override;
+namespace logger{
+    class StderrLogger : public BaseLogger {
+    public:
+        explicit StderrLogger(Level level) noexcept;
 
-private:
-    void log(const std::string& msg, Level) final;
-};
+        ~StderrLogger() noexcept = default;
+
+        void flush() override;
+
+    private:
+        void log(const std::string &msg, Level) final;
+    };
+}
 
 #endif //LOG_STDERR_LOGGER_H

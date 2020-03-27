@@ -1,9 +1,9 @@
-#include <stdout_logger.h>
+#include "stdout_logger.h"
 
 int main() {
-    StdoutLogger logger(StdoutLogger::Level::ERROR);
+    logger::StdoutLogger logger(logger::Level::ERROR);
     logger.debug("Debug msg");
-    logger.set_level(StdoutLogger::Level::WARNING);
+    logger.set_level(logger::Level::WARNING);
     logger.info("Info msg");
     logger.warn("Warn msg");
     logger.error("Error msg");

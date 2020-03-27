@@ -1,9 +1,11 @@
 //
 // Created by Сергей on 25.03.2020.
 //
-#include <base_logger.h>
+#include "base_logger.h"
 
-BaseLogger::BaseLogger(BaseLogger::Level level) noexcept : level_(level)
+using namespace logger;
+
+BaseLogger::BaseLogger(Level level) noexcept : level_(level)
 {
 }
 
@@ -23,12 +25,25 @@ void BaseLogger::error(const std::string & msg) {
     log(msg, Level::ERROR);
 }
 
-void BaseLogger::set_level(enum BaseLogger::Level level) noexcept {
+void BaseLogger::set_level(Level level) noexcept {
     level_ = level;
 }
 
-BaseLogger::Level BaseLogger::level() noexcept {
+Level BaseLogger::level() const noexcept {
     return level_;
+}
+
+std::string BaseLogger::get_level_prefix(Level level) {
+    switch (level) {
+        case Level::DEBUG :
+            return "DEBUG: ";
+        case Level::INFO :
+            return "INFO: ";
+        case Level::WARNING :
+            return "WARNING: ";
+        case Level::ERROR :
+            return "ERROR: ";
+    }
 }
 
 LoggerException::LoggerException(std::string message) : msg(std::move(message)){}

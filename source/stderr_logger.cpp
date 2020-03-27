@@ -5,7 +5,9 @@
 #include <iostream>
 #include "stderr_logger.h"
 
-StderrLogger::StderrLogger(BaseLogger::Level level) noexcept : BaseLogger(level) {}
+using namespace logger;
+
+StderrLogger::StderrLogger(Level level) noexcept : BaseLogger(level) {}
 
 void StderrLogger::flush() {
     try {
@@ -20,22 +22,7 @@ void StderrLogger::flush() {
     }
 }
 
-void StderrLogger::log(const std::string &msg, BaseLogger::Level level) {
-    if (level >= this->level()) {
-        switch (level) {
-            case Level::DEBUG :
-                std::cerr << "DEBUG: ";
-                break;
-            case Level ::INFO :
-                std::cerr << "INFO: ";
-                break;
-            case Level::WARNING :
-                std::cerr << "WARNING: ";
-                break;
-            case Level::ERROR :
-                std::cerr << "ERROR: ";
-                break;
-        }
-        std::cerr << msg << std::endl;
-    }
+void StderrLogger::log(const std::string &msg, Level lvl) {
+    if (lvl >= level())
+        std::cerr << get_level_prefix(lvl) << msg << std::endl;
 }

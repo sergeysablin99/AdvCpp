@@ -5,20 +5,21 @@
 #ifndef LOG_FILE_LOGGER_H
 #define LOG_FILE_LOGGER_H
 
-#include <base_logger.h>
+#include "base_logger.h"
 #include <fstream>
 
-class FileLogger : public BaseLogger {
-public:
-    explicit FileLogger(const std::string& path, Level level);
-    explicit FileLogger(std::ofstream&& other, Level level);
-    ~FileLogger() noexcept;
-    void flush() override;
+namespace logger {
+    class FileLogger : public logger::BaseLogger {
+    public:
+        FileLogger(const std::string& path, logger::Level level);
+        FileLogger(std::ofstream&& other, logger::Level level);
+        ~FileLogger() noexcept;
+        void flush() override;
 
-private:
-    std::ofstream output;
-    void log(const std::string& msg, Level) final;
-};
-
+    private:
+        std::ofstream output;
+        void log(const std::string& msg, logger::Level) final;
+    };
+}
 
 #endif //LOG_FILE_LOGGER_H

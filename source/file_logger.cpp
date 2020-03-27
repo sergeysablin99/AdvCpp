@@ -4,22 +4,20 @@
 
 #include "file_logger.h"
 
+using namespace logger;
+
 FileLogger::FileLogger(const std::string &path, Level level) : BaseLogger(level) {
     output.open(path);
-    if (!output.is_open()) {
-        output.clear();
+    if (!output.is_open())
         throw LoggerException("Can't open file");
-    }
 }
 
-FileLogger::FileLogger(std::ofstream&& other, Level level) : output(std::move(other)) {}
+FileLogger::FileLogger(std::ofstream&& other, Level level) : BaseLogger(level), output(std::move(other)) {}
 
 FileLogger::~FileLogger() noexcept {
     output.close();
-    if (!output.good()) {
-        output.clear();
+    if (!output.good())
         log("Can't close log file", Level::WARNING);
-    }
 }
 
 void FileLogger::flush() {
@@ -35,22 +33,7 @@ void FileLogger::flush() {
     }
 }
 
-void FileLogger::log(const std::string &msg, BaseLogger::Level level) {
-    if (level >= this->level()) {
-        switch (level) {
-            case Level::DEBUG :
-                output << "DEBUG: ";
-                break;
-            case Level ::INFO :
-                output << "INFO: ";
-                break;
-            case Level::WARNING :
-                output << "WARNING: ";
-                break;
-            case Level::ERROR :
-                output << "ERROR: ";
-                break;
-        }
-        output << msg << std::endl;
-    }
+void FileLogger::log(const std::string &msg, Level lvl) {
+    if (lvl >= level())
+        output << get_level_prefix(lvl) << msg << std::endl;
 }

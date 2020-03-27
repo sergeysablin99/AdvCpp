@@ -5,7 +5,9 @@
 #include <iostream>
 #include "stdout_logger.h"
 
-StdoutLogger::StdoutLogger(StdoutLogger::Level level) noexcept : BaseLogger(level) {}
+using namespace logger;
+
+StdoutLogger::StdoutLogger(Level level) noexcept : BaseLogger(level) {}
 
 void StdoutLogger::flush() {
     try {
@@ -20,22 +22,7 @@ void StdoutLogger::flush() {
     }
 }
 
-void StdoutLogger::log(const std::string &msg, BaseLogger::Level level) {
-    if (level >= this->level()) {
-        switch (level) {
-            case Level::DEBUG :
-                std::cout << "DEBUG: ";
-                break;
-            case Level ::INFO :
-                std::cout << "INFO: ";
-                break;
-            case Level::WARNING :
-                std::cout << "WARNING: ";
-                break;
-            case Level::ERROR :
-                std::cout << "ERROR: ";
-                break;
-        }
-        std::cout << msg << std::endl;
-    }
+void StdoutLogger::log(const std::string &msg, Level lvl) {
+    if (lvl >= level())
+        std::cout << get_level_prefix(lvl) << msg << std::endl;
 }
