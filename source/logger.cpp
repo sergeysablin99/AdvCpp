@@ -15,29 +15,29 @@ Logger::Logger() {
     global_logger_ = std::make_unique<StdoutLogger>(Level::INFO);
 }
 
-BaseLogger* Logger::get_global_logger() {
-    return global_logger_.get();
+std::unique_ptr<BaseLogger> Logger::get_global_logger() {
+    return std::move(global_logger_);
 }
 
 void Logger::set_global_logger(BaseLogger&& logger) {
     global_logger_.reset(&logger);
 }
 
-std::unique_ptr<FileLogger> create_file_logger(const std::string& path, Level level) {
+std::unique_ptr<BaseLogger> create_file_logger(const std::string& path, Level level) {
     Logger::get_instance().set_global_logger(std::move(FileLogger(path, level)));
-    return std::unique_ptr<FileLogger>(dynamic_cast<FileLogger *>(Logger::get_instance().get_global_logger()));
+    return Logger::get_instance().get_global_logger();
 }
 
 
-std::unique_ptr<StdoutLogger> create_stdout_logger(Level level) {
+std::unique_ptr<BaseLogger> create_stdout_logger(Level level) {
     Logger::get_instance().set_global_logger(std::move(StdoutLogger(level)));
-    return std::unique_ptr<StdoutLogger>(dynamic_cast<StdoutLogger *>(Logger::get_instance().get_global_logger()));
+    return Logger::get_instance().get_global_logger();
 }
 
 
-std::unique_ptr<StderrLogger> create_stderr_logger(Level level) {
+std::unique_ptr<BaseLogger> create_stderr_logger(Level level) {
     Logger::get_instance().set_global_logger(std::move(StdoutLogger(level)));
-    return std::unique_ptr<StderrLogger>(dynamic_cast<StderrLogger *>(Logger::get_instance().get_global_logger()));
+    return Logger::get_instance().get_global_logger();
 }
 
 

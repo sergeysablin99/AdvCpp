@@ -24,16 +24,16 @@ namespace logger {
 
         static Logger &get_instance();
 
-        BaseLogger *get_global_logger();
+        std::unique_ptr<BaseLogger> get_global_logger();
 
         void set_global_logger(BaseLogger&& logger);
     };
 
-    std::unique_ptr<FileLogger> create_file_logger(const std::string &path, logger::Level level);
+    std::unique_ptr<BaseLogger> create_file_logger(const std::string &path, logger::Level level);
 
-    std::unique_ptr<StdoutLogger> create_stdout_logger(logger::Level level);
+    std::unique_ptr<BaseLogger> create_stdout_logger(logger::Level level);
 
-    std::unique_ptr<StderrLogger> create_stderr_logger(logger::Level level);
+    std::unique_ptr<BaseLogger> create_stderr_logger(logger::Level level);
 
     void debug(const std::string &msg);
 
