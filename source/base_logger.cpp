@@ -43,6 +43,8 @@ std::string BaseLogger::get_level_prefix(Level level) {
             return "WARNING: ";
         case Level::ERROR :
             return "ERROR: ";
+        default:
+            return "INFO: ";
     }
 }
 

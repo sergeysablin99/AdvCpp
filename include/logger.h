@@ -5,10 +5,8 @@
 #ifndef LOG_LOGGER_H
 #define LOG_LOGGER_H
 
-#include "file_logger.h"
-#include "memory"
-#include "stdout_logger.h"
-#include "stderr_logger.h"
+#include "base_logger.h"
+#include <memory>
 
 namespace logger {
     class Logger {
@@ -24,9 +22,9 @@ namespace logger {
 
         static Logger &get_instance();
 
-        std::unique_ptr<BaseLogger> get_global_logger();
+        BaseLogger* get_global_logger();
 
-        void set_global_logger(BaseLogger&& logger);
+        void set_global_logger(std::unique_ptr<BaseLogger> logger);
     };
 
     std::unique_ptr<BaseLogger> create_file_logger(const std::string &path, logger::Level level);
