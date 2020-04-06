@@ -39,10 +39,10 @@ namespace logger {
 
     class LoggerException : public std::exception {
     private:
-        std::string msg;
+        std::string msg_;
     public:
         explicit LoggerException(std::string message);
-        const char* what() const noexcept override { return msg.c_str(); };
+        const char* what() const noexcept override { return msg_.c_str(); };
     };
 }
 

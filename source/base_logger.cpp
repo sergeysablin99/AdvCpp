@@ -48,4 +48,4 @@ std::string BaseLogger::get_level_prefix(Level level) {
     }
 }
 
-LoggerException::LoggerException(std::string message) : msg(std::move(message)){}
+LoggerException::LoggerException(std::string message) : msg_(std::move(message)){}

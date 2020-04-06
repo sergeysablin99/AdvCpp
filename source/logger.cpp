@@ -21,38 +21,42 @@ Logger::Logger() {
 }
 
 BaseLogger* Logger::get_global_logger() {
+    if (global_logger_ == nullptr)
+        throw LoggerException("Logger is empty");
     return global_logger_.get();
 }
 
 void Logger::set_global_logger(std::unique_ptr<BaseLogger> logger) {
-    global_logger_.reset(logger.get());
+    global_logger_ = std::move(logger);
 }
 
-std::unique_ptr<BaseLogger> logger::create_file_logger(const std::string& path, Level level) {
-    return std::make_unique<FileLogger>(path, level);
-}
+namespace logger {
+    std::unique_ptr<BaseLogger> create_file_logger(const std::string &path, Level level) {
+        return std::make_unique<FileLogger>(path, level);
+    }
 
-std::unique_ptr<BaseLogger> logger::create_stdout_logger(Level level) {
-    return std::make_unique<StdoutLogger>(level);
-}
+    std::unique_ptr<BaseLogger> create_stdout_logger(Level level) {
+        return std::make_unique<StdoutLogger>(level);
+    }
 
 
-std::unique_ptr<BaseLogger> logger::create_stderr_logger(Level level) {
-    return std::make_unique<StderrLogger>(level);
-}
+    std::unique_ptr<BaseLogger> create_stderr_logger(Level level) {
+        return std::make_unique<StderrLogger>(level);
+    }
 
-void logger::debug(const std::string& msg) {
-    Logger::get_instance().get_global_logger()->debug(msg);
-}
+    void debug(const std::string &msg) {
+        Logger::get_instance().get_global_logger()->debug(msg);
+    }
 
-void logger::info(const std::string& msg) {
-    Logger::get_instance().get_global_logger()->info(msg);
-}
+    void info(const std::string &msg) {
+        Logger::get_instance().get_global_logger()->info(msg);
+    }
 
-void logger::warning(const std::string& msg) {
-    Logger::get_instance().get_global_logger()->warn(msg);
-}
+    void warning(const std::string &msg) {
+        Logger::get_instance().get_global_logger()->warn(msg);
+    }
 
-void logger::error(const std::string& msg) {
-    Logger::get_instance().get_global_logger()->error(msg);
+    void error(const std::string &msg) {
+        Logger::get_instance().get_global_logger()->error(msg);
+    }
 }
