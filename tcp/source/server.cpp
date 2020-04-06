@@ -2,6 +2,8 @@
 // Created by gtl on 28.03.2020.
 //
 
+
+#include <arpa/inet.h>
 #include "connection.h"
 #include <cstring>
 #include "exceptions.h"
@@ -10,7 +12,8 @@
 
 using namespace tcp;
 
-Server::Server(in_addr ip, in_port_t port) : opened(true), connections(1), addr_(ip), port_(port) {
+Server::Server(const std::string&  ip, in_port_t port) :
+opened(true), connections(1), port_(port), addr_({.s_addr = inet_addr(ip.data())}) {
     fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_ == -1)
         throw SocketError(std::strerror(errno));
@@ -18,10 +21,14 @@ Server::Server(in_addr ip, in_port_t port) : opened(true), connections(1), addr_
     addr.sin_family = AF_INET;
     addr.sin_port = port;
     addr.sin_addr = addr_;
-    if (bind(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1)
+    if (bind(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1) {
+        close();
         throw BindError(std::strerror(errno));
-    if (listen(fd_, connections) == -1)
+    }
+    if (listen(fd_, connections) == -1) {
+        close();
         throw ListenError(std::strerror(errno));
+    }
 }
 
 bool Server::is_opened() noexcept{
@@ -36,7 +43,7 @@ void Server::close() {
     }
 }
 
-void Server::set_max_connect(int count) {
+void Server::set_max_connect(size_t count) {
     connections = count;
     if (listen(fd_, connections) == -1)
         throw ListenError(std::strerror(errno));
@@ -66,6 +73,5 @@ Connection Server::accept() {
     int cfd = ::accept(fd_, reinterpret_cast<sockaddr*>(&peer_addr), &peer_addr_size);
     if (cfd == -1)
         throw AcceptError(std::strerror(errno));
-    close();
-    return {std::move(cfd), peer_addr.sin_addr, peer_addr.sin_port, addr_, port_};
+    return {cfd, peer_addr.sin_addr, peer_addr.sin_port, addr_, port_};
 }

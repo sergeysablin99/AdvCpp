@@ -27,10 +27,10 @@ namespace tcp {
         Connection(in_addr ip, in_port_t port);
 
         ssize_t write(const void* data, size_t size) const;
-        ssize_t read(const void* data, size_t size) const;
+        ssize_t read(void* data, size_t size) const;
         void close();
-        bool is_opened() noexcept;
-        void readExact(const void* data, size_t size) const;
+        bool is_opened() const noexcept;
+        void readExact(void* data, size_t size) const;
         void writeExact(const void* data, size_t size) const;
         void set_timeout(int sec);
         void connect(in_addr addr, in_port_t port);

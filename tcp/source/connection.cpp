@@ -11,7 +11,7 @@ using namespace tcp;
 
 Connection::Connection(int fd, in_addr addr, in_port_t port,
                        in_addr src_addr, in_port_t src_port) :
-    fd_(fd), dst_addr(addr), dst_port(port), opened(false),
+    fd_(fd), dst_addr(addr), dst_port(port), opened(true),
     src_addr(src_addr), src_port(src_port)
     {
     set_timeout(1);
@@ -36,7 +36,7 @@ Connection::Connection(in_addr ip, in_port_t port) :
     connect(ip, port);
 }
 
-bool Connection::is_opened() noexcept {
+bool Connection::is_opened() const noexcept {
     return opened;
 }
 
@@ -48,7 +48,7 @@ void Connection::set_timeout(int sec) {
 }
 
 void Connection::close() {
-    if (is_opened()) {
+    if (is_opened()) {  // TODO роверить открыто ли соединение
         if (::close(fd_) == -1)
             throw CloseError(std::strerror(errno));
         opened = false;
@@ -56,14 +56,18 @@ void Connection::close() {
 }
 
 ssize_t Connection::write(const void* data, size_t size) const {
+    if (!is_opened())
+        throw WriteError("Connection is closed");
     ssize_t reply = ::write(fd_, data, size);
     if (reply == -1)
         throw WriteError(std::strerror(errno));
     return reply;
 }
 
-ssize_t Connection::read(const void *data, size_t size) const {
-    ssize_t reply = ::write(fd_, data, size);
+ssize_t Connection::read(void *data, size_t size) const {
+    if (!is_opened())
+        throw WriteError("Connection is closed");
+    ssize_t reply = ::read(fd_, data, size);
     if (reply == -1)
         throw ReadError(std::strerror(errno));
     return reply;
@@ -76,7 +80,7 @@ void Connection::writeExact(const void *data, size_t len) const {
     }
 }
 
-void Connection::readExact(const void *data, size_t len) const {
+void Connection::readExact(void *data, size_t len) const {
     size_t bytes_to_read = len;
     while(bytes_to_read > 0)
         bytes_to_read -= read(data, bytes_to_read);

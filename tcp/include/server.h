@@ -8,6 +8,7 @@
 #include "connection.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <string>
 #include <utility>
 
 namespace tcp {
@@ -20,12 +21,12 @@ namespace tcp {
         in_port_t port_;
 
     public:
-        Server(in_addr ip, in_port_t port);
+        Server(const std::string& ip, in_port_t port);
         Connection accept();
         void close();
         bool is_opened() noexcept;
         void open(in_addr ip, in_port_t port);
-        void set_max_connect(int count);
+        void set_max_connect(size_t count);
     };
 }
 
