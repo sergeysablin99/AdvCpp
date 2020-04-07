@@ -26,7 +26,7 @@ namespace tcp {
 
     public:
         Connection(const std::string& addr, int port);
-
+        ~Connection();
         ssize_t write(const void* data, size_t size) const;
         ssize_t read(void* data, size_t size) const;
         void close();
