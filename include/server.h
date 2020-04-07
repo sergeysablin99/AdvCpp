@@ -6,6 +6,7 @@
 #define TCP_SERVER_H
 
 #include "connection.h"
+#include <functional>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <string>
@@ -15,18 +16,24 @@ namespace tcp {
     class Server {
     private:
         int fd_;
-        bool opened;
-        int connections;
+        int epoll_;
+        bool opened_;
+        int connections_;
+        std::function<void(Connection&)> callback_;
         in_addr addr_;
         in_port_t port_;
 
-    public:
-        Server(const std::string& ip, int port);
-        Connection accept();
         void close();
+        void addEvent(int fd, uint32_t events);
+        void acceptClients();
+        void handleConnection(int fd, uint32_t event);
+
+    public:
+        Server(const std::string& addr, int port,
+                std::function<void(Connection&)> callback, size_t conn = 128);
         bool is_opened() noexcept;
-        void open(in_addr ip, in_port_t port);
-        void set_max_connect(size_t count);
+        void handleClients();
+        void open(const std::string& ip, int port, size_t conn = 128);
     };
 }
 

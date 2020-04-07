@@ -22,6 +22,7 @@ namespace tcp {
         bool opened_;
         Connection(int fd, in_addr addr, in_port_t port,
                     in_addr src_addr, in_port_t src_port);
+        Connection(int fd);
         friend Server;
 
     public:

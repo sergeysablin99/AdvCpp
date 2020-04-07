@@ -97,6 +97,10 @@ void Connection::readExact(void *data, size_t len) const
         bytes_to_read -= read(data, bytes_to_read);
 }
 
+Connection::Connection(int fd) : fd_(fd), opened_(true) {
+    set_timeout(1);;
+}
+
 Connection::~Connection() {
     close();
 }
