@@ -22,11 +22,12 @@ namespace tcp {
         bool opened_;
         Connection(int fd, in_addr addr, in_port_t port,
                     in_addr src_addr, in_port_t src_port);
+        Connection(int fd);
         friend Server;
 
     public:
         Connection(const std::string& addr, int port);
-
+        ~Connection();
         ssize_t write(const void* data, size_t size) const;
         ssize_t read(void* data, size_t size) const;
         void close();
