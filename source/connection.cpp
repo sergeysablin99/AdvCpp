@@ -98,7 +98,12 @@ void Connection::readExact(void *data, size_t len) const
 }
 
 Connection::~Connection() {
-    close();
+    try {
+        close();
+    }
+    catch (TcpError& e) {
+        // Just catch, do nothing
+    }
 }
 
 

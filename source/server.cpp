@@ -13,12 +13,15 @@
 using namespace tcp;
 
 Server::Server(const std::string&  ip, int port) :
-    opened(true), connections(1), port_(htons(port)),
-    addr_({.s_addr = inet_addr(ip.data())})
+    opened(true), connections(1), port_(htons(port))
 {
     fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_ == -1)
         throw SocketError(std::strerror(errno));
+
+    addr_.s_addr = inet_addr(ip.data());
+    if (addr_.s_addr == INADDR_NONE)
+        throw TcpError(std::strerror(errno));
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
