@@ -10,7 +10,7 @@ using namespace logger;
 StderrLogger::StderrLogger(Level level) noexcept : BaseLogger(level) {}
 
 void StderrLogger::flush() {
-    TryFlush(&std::cerr);
+    TryFlush(std::cerr);
 }
 
 void StderrLogger::log(const std::string &msg, Level lvl) {

@@ -21,7 +21,7 @@ FileLogger::~FileLogger() noexcept {
 }
 
 void FileLogger::flush() {
-    TryFlush(&output);
+    TryFlush(output);
 }
 
 void FileLogger::log(const std::string &msg, Level lvl) {

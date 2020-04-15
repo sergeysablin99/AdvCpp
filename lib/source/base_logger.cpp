@@ -48,4 +48,17 @@ std::string BaseLogger::get_level_prefix(Level level) {
     }
 }
 
+void BaseLogger::TryFlush(std::ostream &stream) {
+    try {
+        stream.flush();
+    }
+    catch (const std::ios_base::failure& e) {
+        throw LoggerException(e.what());
+    }
+    if (!stream.good()) {
+        stream.clear();
+        throw LoggerException("Bad flush");
+    }
+}
+
 LoggerException::LoggerException(std::string message) : msg_(std::move(message)){}

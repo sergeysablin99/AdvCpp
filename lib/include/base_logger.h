@@ -5,7 +5,7 @@
 #ifndef LOG_BASE_LOGGER_H
 #define LOG_BASE_LOGGER_H
 
-#include <ios>
+#include <iostream>
 #include <string>
 #include <utility>
 
@@ -44,21 +44,7 @@ namespace logger {
 
     protected:
         std::string get_level_prefix(Level level);
-
-        template<typename T>
-        void TryFlush(std::basic_ostream<T>* stream)
-        {
-            try {
-                stream->flush();
-            }
-            catch (const std::ios_base::failure& e) {
-                throw LoggerException(e.what());
-            }
-            if (!stream->good()) {
-                stream->clear();
-                throw LoggerException("Bad flush");
-            }
-        };
+        void TryFlush(std::ostream& stream);
     };
 }
 
