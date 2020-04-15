@@ -121,15 +121,15 @@ void Server::handleClients()
             else
                 throw RuntimeError(std::strerror(errno));
 
-        for (int i{}; i < nfds; ++i)
+        for (int i = 0; i < nfds; ++i)
         {
-            int fd = events[i].data.fd;
+            int event_fd = events[i].data.fd;
             auto event = events[i].events;
 
-            if (fd == fd_)
+            if (event_fd == fd_)
                 acceptClients();
             else {
-                handleConnection(fd, event);
+                handleConnection(event_fd, event);
             }
         }
     }
@@ -144,9 +144,10 @@ void Server::handleConnection(int fd, uint32_t event)
         return;
     }
 
-
     Connection c(fd);
     callback_(c);
+    if (c.is_opened())
+        c.ExtractFd();
 }
 
 

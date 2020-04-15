@@ -20,11 +20,13 @@ namespace tcp {
         in_port_t dst_port_;
         timeval timeout_;
         bool opened_;
+
         Connection(int fd, in_addr addr, in_port_t port,
                     in_addr src_addr, in_port_t src_port);
         Connection(int fd);
-        friend Server;
+        void ExtractFd();
 
+        friend Server;
     public:
         Connection(const std::string& addr, int port);
         ~Connection();
@@ -32,9 +34,6 @@ namespace tcp {
         ssize_t read(void* data, size_t size) const;
         void close();
         bool is_opened() const noexcept;
-        void readExact(void* data, size_t size) const;
-        void writeExact(const void* data, size_t size) const;
-        void set_timeout(int sec);
         void connect(const std::string& addr, int port);
     };
 }
