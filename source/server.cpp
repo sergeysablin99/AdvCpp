@@ -147,24 +147,13 @@ void Server::handleConnection(int fd, uint32_t event)
 
     auto c = clients_.at(fd);
     callback_(c);
-    if (!c->read_finished())
-        readClient(fd);
-    if (!c->write_finished())
-        writeClient(fd);
-    if (!c->is_opened())
-        clients_.erase(fd);
-}
-
-void Server::readClient(int fd) {
-    auto c = clients_.at(fd);
+    c->operation_num_ = 0;
     if (!c->read_finished())
         c->read();
-}
-
-void Server::writeClient(int fd) {
-    auto c = clients_.at(fd);
     if (!c->write_finished())
         c->write();
+    if (!c->is_opened())
+        clients_.erase(fd);
 }
 
 

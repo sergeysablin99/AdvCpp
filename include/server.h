@@ -30,9 +30,6 @@ namespace tcp {
         void acceptClients();
         void handleConnection(int fd, uint32_t event);
 
-        void readClient(int fd);
-        void writeClient(int fd);
-
     public:
         Server(const std::string& addr, int port,
                 std::function<void(std::shared_ptr<Connection>)> callback, size_t conn = 128);

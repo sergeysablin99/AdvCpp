@@ -30,12 +30,13 @@ namespace tcp {
         size_t write_size_;
         int read_pos_;
         int write_pos_;
+        size_t operations_done_;
+        size_t operation_num_;
 
         Connection(int fd, in_addr addr, in_port_t port,
                     in_addr src_addr, in_port_t src_port);
         Connection(int fd);
 
-        void ExtractFd();
         void read();
         void write();
 

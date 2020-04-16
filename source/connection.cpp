@@ -15,7 +15,8 @@ Connection::Connection(int fd, in_addr addr, in_port_t port,
     fd_(fd), dst_addr_(addr), dst_port_(port), opened_(true),
     src_addr_(src_addr), src_port_(src_port),
     read_pos_(0), write_pos_(0),
-    write_finished_(true), read_finished_(true)
+    write_finished_(true), read_finished_(true),
+    operations_done_(0), operation_num_(0)
     {}
 
 void Connection::connect(const std::string& addr, int port)
@@ -34,7 +35,8 @@ void Connection::connect(const std::string& addr, int port)
 
 Connection::Connection(const std::string& addr, int port):
     read_pos_(0), write_pos_(0),
-    write_finished_(true), read_finished_(true)
+    write_finished_(true), read_finished_(true),
+    operations_done_(0), operation_num_(0)
 {
     fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_ == -1)
@@ -62,10 +64,13 @@ void Connection::write(std::shared_ptr<void> data, size_t size)
     if (!is_opened())
         throw WriteError("Connection is closed");
 
-    write_data_ = reinterpret_cast<char*>(data.get());
-    write_size_ = size;
-    write();
-    write_finished_ = false;
+    ++operation_num_;
+    if (operation_num_ > operations_done_)
+    {
+        write_data_ = reinterpret_cast<char *>(data.get());
+        write_size_ = size;
+        write_finished_ = false;
+    }
 }
 
 void Connection::read(std::shared_ptr<void> data, size_t size)
@@ -73,16 +78,20 @@ void Connection::read(std::shared_ptr<void> data, size_t size)
     if (!is_opened())
         throw ReadError("Connection is closed");
 
-    read_data_ = reinterpret_cast<char*>(data.get());
-    read_size_ = size;
-    read();
-    read_finished_ = false;
+    ++operation_num_;
+    if (operation_num_ > operations_done_)
+    {
+        read_data_ = reinterpret_cast<char *>(data.get());
+        read_size_ = size;
+        read_finished_ = false;
+    }
 }
 
 Connection::Connection(int fd) :
     fd_(fd), opened_(true),
     read_pos_(0), write_pos_(0),
-    write_finished_(true), read_finished_(true)
+    write_finished_(true), read_finished_(true),
+    operations_done_(0), operation_num_(0)
 {}
 
 Connection::~Connection() {
@@ -93,35 +102,37 @@ Connection::~Connection() {
     }
 }
 
-void Connection::ExtractFd() {
-    fd_ = -1;
-}
-
 void Connection::read() {
     ssize_t reply = ::read(fd_, read_data_ + read_pos_, read_size_);
-    if (errno == EAGAIN || errno == EWOULDBLOCK)
-        return;
-    if (reply == -1)
+
+    if (reply == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
         throw ReadError(std::to_string(errno));
-    read_pos_ += reply;
-    if (read_pos_ == read_size_)
-    {
-        read_pos_ = 0;
-        read_finished_ = true;
+    } else {
+        read_pos_ += reply;
+        if (read_pos_ == read_size_) {
+            read_pos_ = 0;
+            read_finished_ = true;
+            ++operations_done_;
+        }
     }
 }
 
 void Connection::write() {
     ssize_t reply = ::write(fd_, write_data_ + write_pos_, write_size_);
-    if (errno == EAGAIN || errno == EWOULDBLOCK)
-        return;
-    if (reply == -1)
-        throw WriteError(std::to_string(errno));
-    write_pos_ += reply;
-    if (write_pos_ == write_size_)
-    {
-        write_pos_ = 0;
-        write_finished_ = true;
+    if (reply == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+        throw WriteError(std::strerror(errno));
+    }
+    else {
+        write_pos_ += reply;
+        if (write_pos_ == write_size_) {
+            write_pos_ = 0;
+            write_finished_ = true;
+            ++operations_done_;
+        }
     }
 }
 
