@@ -14,7 +14,7 @@
 using namespace tcp;
 
 Server::Server(const std::string&  addr, int port,
-        std::function<void(Connection&)> callback, size_t conn) :
+        std::function<void(std::shared_ptr<Connection>)> callback, size_t conn) :
         callback_(std::move(callback)), opened_(false)
 {
     open(addr, port, conn);
@@ -96,6 +96,7 @@ void Server::acceptClients()
         }
 
         addEvent(fd, EPOLLIN);
+        clients_.emplace(fd, std::shared_ptr<Connection>(new Connection(fd)));
     }
 }
 
@@ -144,10 +145,26 @@ void Server::handleConnection(int fd, uint32_t event)
         return;
     }
 
-    Connection c(fd);
+    auto c = clients_.at(fd);
     callback_(c);
-    if (c.is_opened())
-        c.ExtractFd();
+    if (!c->read_finished())
+        readClient(fd);
+    if (!c->write_finished())
+        writeClient(fd);
+    if (!c->is_opened())
+        clients_.erase(fd);
+}
+
+void Server::readClient(int fd) {
+    auto c = clients_.at(fd);
+    if (!c->read_finished())
+        c->read();
+}
+
+void Server::writeClient(int fd) {
+    auto c = clients_.at(fd);
+    if (!c->write_finished())
+        c->write();
 }
 
 

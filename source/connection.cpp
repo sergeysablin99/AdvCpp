@@ -13,9 +13,10 @@ using namespace tcp;
 Connection::Connection(int fd, in_addr addr, in_port_t port,
                        in_addr src_addr, in_port_t src_port) :
     fd_(fd), dst_addr_(addr), dst_port_(port), opened_(true),
-    src_addr_(src_addr), src_port_(src_port)
-    {
-}
+    src_addr_(src_addr), src_port_(src_port),
+    read_pos_(0), write_pos_(0),
+    write_finished_(true), read_finished_(true)
+    {}
 
 void Connection::connect(const std::string& addr, int port)
 {
@@ -31,9 +32,11 @@ void Connection::connect(const std::string& addr, int port)
     opened_ = true;
 }
 
-Connection::Connection(const std::string& addr, int port)
+Connection::Connection(const std::string& addr, int port):
+    read_pos_(0), write_pos_(0),
+    write_finished_(true), read_finished_(true)
 {
-    fd_ = fd_ = socket(AF_INET, SOCK_STREAM, 0);
+    fd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_ == -1)
         throw SocketError(std::strerror(errno));
     connect(addr, port);
@@ -54,35 +57,39 @@ void Connection::close()
         }
 }
 
-ssize_t Connection::write(const void* data, size_t size) const
+void Connection::write(std::shared_ptr<void> data, size_t size)
 {
     if (!is_opened())
         throw WriteError("Connection is closed");
-    ssize_t reply = ::write(fd_, data, size);
-    if (reply == -1)
-        throw WriteError(std::strerror(errno));
-    return reply;
+
+    write_data_ = reinterpret_cast<char*>(data.get());
+    write_size_ = size;
+    write();
+    write_finished_ = false;
 }
 
-ssize_t Connection::read(void *data, size_t size) const
+void Connection::read(std::shared_ptr<void> data, size_t size)
 {
     if (!is_opened())
         throw ReadError("Connection is closed");
-    ssize_t reply = ::read(fd_, data, size);
-    if (reply == -1)
-        throw ReadError(std::strerror(errno));
-    return reply;
+
+    read_data_ = reinterpret_cast<char*>(data.get());
+    read_size_ = size;
+    read();
+    read_finished_ = false;
 }
 
-Connection::Connection(int fd) : fd_(fd), opened_(true) {
-}
+Connection::Connection(int fd) :
+    fd_(fd), opened_(true),
+    read_pos_(0), write_pos_(0),
+    write_finished_(true), read_finished_(true)
+{}
 
 Connection::~Connection() {
     try {
         close();
     }
     catch (tcp::TcpError& e) {
-
     }
 }
 
@@ -90,6 +97,38 @@ void Connection::ExtractFd() {
     fd_ = -1;
 }
 
+void Connection::read() {
+    ssize_t reply = ::read(fd_, read_data_ + read_pos_, read_size_);
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+        return;
+    if (reply == -1)
+        throw ReadError(std::to_string(errno));
+    read_pos_ += reply;
+    if (read_pos_ == read_size_)
+    {
+        read_pos_ = 0;
+        read_finished_ = true;
+    }
+}
 
+void Connection::write() {
+    ssize_t reply = ::write(fd_, write_data_ + write_pos_, write_size_);
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+        return;
+    if (reply == -1)
+        throw WriteError(std::to_string(errno));
+    write_pos_ += reply;
+    if (write_pos_ == write_size_)
+    {
+        write_pos_ = 0;
+        write_finished_ = true;
+    }
+}
 
+bool Connection::read_finished() const noexcept {
+    return read_finished_;
+}
 
+bool Connection::write_finished() const noexcept {
+    return write_finished_;
+}
