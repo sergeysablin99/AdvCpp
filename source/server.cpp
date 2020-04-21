@@ -14,7 +14,7 @@
 using namespace tcp;
 
 Server::Server(const std::string&  addr, int port,
-        std::function<void(std::shared_ptr<Connection>)> callback, size_t conn) :
+        std::function<void(Connection&)> callback, size_t conn) :
         callback_(std::move(callback)), opened_(false)
 {
     open(addr, port, conn);
@@ -146,7 +146,7 @@ void Server::handleConnection(int fd, uint32_t event)
     }
 
     auto c = clients_.at(fd);
-    callback_(c);
+    callback_(*c.get());
     c->operation_num_ = 0;
     if (!c->read_finished())
         c->read();

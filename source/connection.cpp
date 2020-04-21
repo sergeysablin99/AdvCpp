@@ -1,12 +1,14 @@
 //
 // Created by gtl on 29.03.2020.
 //
-
+#include <iostream>
 #include <arpa/inet.h>
 #include "connection.h"
 #include <cstring>
 #include "exceptions.h"
+#include <limits.h>
 #include <unistd.h>
+#include <sys/resource.h>
 
 using namespace tcp;
 
@@ -103,7 +105,8 @@ Connection::~Connection() {
 }
 
 void Connection::read() {
-    ssize_t reply = ::read(fd_, read_data_ + read_pos_, read_size_);
+    size_t read_size = read_size_ > SSIZE_MAX ? SSIZE_MAX: read_size_;
+    ssize_t reply = ::read(fd_, read_data_ + read_pos_, read_size);
 
     if (reply == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -120,7 +123,8 @@ void Connection::read() {
 }
 
 void Connection::write() {
-    ssize_t reply = ::write(fd_, write_data_ + write_pos_, write_size_);
+    size_t write_size = write_size_ > RLIMIT_FSIZE ? RLIMIT_FSIZE: write_size_;
+    ssize_t reply = ::write(fd_, write_data_ + write_pos_, write_size);
     if (reply == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
@@ -128,6 +132,7 @@ void Connection::write() {
     }
     else {
         write_pos_ += reply;
+        write_size_ -= reply;
         if (write_pos_ == write_size_) {
             write_pos_ = 0;
             write_finished_ = true;

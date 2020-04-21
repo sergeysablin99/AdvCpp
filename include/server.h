@@ -20,7 +20,7 @@ namespace tcp {
         int epoll_;
         bool opened_;
         int connections_;
-        std::function<void(std::shared_ptr<Connection>)> callback_;
+        std::function<void(Connection&)> callback_;
         in_addr addr_;
         in_port_t port_;
         std::map<int, std::shared_ptr<Connection>> clients_;
@@ -32,7 +32,7 @@ namespace tcp {
 
     public:
         Server(const std::string& addr, int port,
-                std::function<void(std::shared_ptr<Connection>)> callback, size_t conn = 128);
+               std::function<void(Connection&)> callback, size_t conn = 128);
         bool is_opened() noexcept;
         void handleClients();
         void open(const std::string& ip, int port, size_t conn = 128);
