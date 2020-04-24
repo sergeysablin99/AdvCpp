@@ -6,66 +6,68 @@
 #ifndef SHMAP_H
 #define SHMAP_H
 
-#include <semaphore.h>
 #include <map>
 
 namespace shmem {
+    class Semaphore {
+        sem_t* sem_;
+    public:
+        Semaphore(sem_t* sem);
+        ~Semaphore();
+    };
+
+    Semaphore::Semaphore(sem_t* sem) : sem_(sem)
+    {
+        sem_wait(sem_);
+    }
+
+    Semaphore::~Semaphore() {
+        sem_post(sem_);
+    }
+
     template<typename Key,
             typename T,
-            typename Allocator>
+            typename Compare = std::less<Key>,
+            typename Allocator = MMapAllocator< std::pair<Key, T>, std::pair<Key, T>[5]> >
     class Shmap {
-        std::map<Key, T, std::less<Key>, Allocator> map_;
-        sem_t* sem_;
+        std::map<Key, T, Compare, Allocator> map_;
     public:
         void insert(Key key, T value);
         void erase(size_t pos);
         void erase(const Key& key);
-        void reset(const Key& key, T value);
-        const T& at(const Key& key) const;
-        Shmap();
+        void reset(Key key, T value);
+        T at(const Key& key) const;
+        Shmap() = default;
     };
 
-    template<typename Key, typename T, typename Allocator>
-    void Shmap<Key, T, Allocator>::insert(Key key, T value) {
-        sem_wait(sem_);
+    template<typename Key, typename T, typename Compare,  typename Allocator>
+    void Shmap<Key, T, Compare,  Allocator>::insert(Key key, T value) {
+        Semaphore sem(map_.get_allocator().get_sem());
         map_.insert(key, value);
-        sem_post(sem_);
     }
 
-    template<typename Key, typename T, typename Allocator>
-    void Shmap<Key, T, Allocator>::erase(size_t pos) {
-        sem_wait(sem_);
+     template<typename Key, typename T, typename Compare,  typename Allocator>
+    void Shmap<Key, T,Compare,  Allocator>::erase(size_t pos) {
+        Semaphore sem(map_.get_allocator().get_sem());
         map_.erase(pos);
-        sem_post(sem_);
     }
 
-    template<typename Key, typename T, typename Allocator>
-    void Shmap<Key, T, Allocator>::erase(const Key &key) {
-        sem_wait(sem_);
+     template<typename Key, typename T, typename Compare,  typename Allocator>
+    void Shmap<Key, T,Compare,  Allocator>::erase(const Key &key) {
+        Semaphore sem(map_.get_allocator().get_sem());
         map_.erase(key);
-        sem_post(sem_);
     }
 
-    template<typename Key, typename T, typename Allocator>
-    const T& Shmap<Key, T, Allocator>::at(const Key &key) const {
-        sem_wait(sem_);
-        const T& reply = map_.at(key);
-        sem_post(sem_);
-        return reply;
+     template<typename Key, typename T, typename Compare,  typename Allocator>
+    T Shmap<Key, T,Compare,  Allocator>::at(const Key &key) const {
+        Semaphore sem(map_.get_allocator().get_sem());
+        return map_.at(key);
     }
 
-    template<typename Key, typename T, typename Allocator>
-    void Shmap<Key, T, Allocator>::reset(const Key &key, T value) {
-        sem_wait(sem_);
+     template<typename Key, typename T, typename Compare,  typename Allocator>
+    void Shmap<Key, T,Compare,  Allocator>::reset(Key key, T value) {
+        Semaphore sem(map_.get_allocator().get_sem());
         map_[key] = value;
-        sem_post(sem_);
-    }
-
-    template<typename Key, typename T, typename Allocator>
-    Shmap<Key, T, Allocator>::Shmap() {
-        MMapAllocator<sem_t> alloc;
-        sem_ = alloc.allocate(sizeof(sem_t));
-        sem_init(sem_, 1, 1);
     }
 }
 
