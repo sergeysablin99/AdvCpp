@@ -37,7 +37,6 @@ namespace shmem {
         T* allocate(std::size_t size);
         void deallocate(T* p, std::size_t size);
 
-        MMapAllocator<T, MEM_SIZE> select_on_container_copy_construction();
 
         std::shared_ptr<Mmap> mmap;
 
@@ -46,7 +45,13 @@ namespace shmem {
 
         template <typename U, typename U_MEM>
         MMapAllocator(const MMapAllocator<U, U_MEM>& other);
+        MMapAllocator<T, MEM_SIZE> select_on_container_copy_construction();
     };
+
+    template <typename T, typename MEM_SIZE>
+    bool operator!=(MMapAllocator<T, MEM_SIZE>& left, const MMapAllocator<T, MEM_SIZE>& right) {
+        return left.mmap.get() == right.mmap.get();
+    }
 
     Mmap::Mmap(std::size_t memory_size): size(memory_size)
     {

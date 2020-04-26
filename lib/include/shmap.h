@@ -38,7 +38,14 @@ namespace shmem {
         void reset(Key key, T value);
         T at(const Key& key) const;
         Shmap() = default;
+        Shmap(const Allocator& alloc);
     };
+
+    template<typename Key, typename T, typename Compare,  typename Allocator>
+    Shmap<Key, T, Compare, Allocator>::Shmap(const Allocator &alloc):
+    map_(alloc)
+    {
+    }
 
     template<typename Key, typename T, typename Compare,  typename Allocator>
     void Shmap<Key, T, Compare,  Allocator>::insert(Key key, T value) {

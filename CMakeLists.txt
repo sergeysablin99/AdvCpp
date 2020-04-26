@@ -3,7 +3,6 @@ project(shmem_example)
 
 set(CMAKE_CXX_STANDARD 14)
 
-
 add_executable(example example/main.cpp)
 target_include_directories(example PUBLIC lib/include)
 target_link_libraries(example pthread)
