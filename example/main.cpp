@@ -14,17 +14,25 @@
 
 
 int main() {
-    using StrAlloc = shmem::MMapAllocator<char, char[1024]>;
+    // Create memory map
+    shmem::Mmap mmap{1024*1024};
+    // define allocator for string
+    using StrAlloc = shmem::MMapAllocator<char>;
     using my_str = std::basic_string<char,  std::char_traits<char>, StrAlloc>;
-    StrAlloc str_alloc;
+
+    StrAlloc str_alloc(mmap);
     my_str str{str_alloc};
 
-    using MapAlloc = shmem::MMapAllocator<std::pair<int, my_str>, std::pair<int, my_str>[1024]>;
-    const MapAlloc mapAlloc;
+    using MapAlloc = shmem::MMapAllocator<std::pair<const int, my_str>>;
+    MapAlloc mapAlloc(mmap);
 
-    shmem::Shmap<int, my_str, std::less<char>, MapAlloc> map(mapAlloc);
+    shmem::Shmap<int, my_str> map(mapAlloc);
 
-    map.reset(1, "0");
+    my_str new_str(str_alloc);
+    new_str.append("0");
+
+    map.reset(1, new_str);
+
     int child = fork();
     if (child) {
         for (int i = 0; i < 150; ++i)
